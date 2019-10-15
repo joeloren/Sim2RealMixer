@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class QNetwork(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_size = 64, fc2_size = 64):
+    def __init__(self, state_size, action_size, seed, fc1_size=64, fc2_size=64):
         """Initialize parameters and build model.
         Params
         ======
@@ -14,14 +14,14 @@ class QNetwork(nn.Module):
             action_size (int): Dimension of each action
             seed (int): Random seed
         """
-        
+
         super(QNetwork, self).__init__()
         hidden_size = 30
         self.seed = torch.manual_seed(seed)
         self.fc1 = nn.Linear(state_size, fc1_size)
         self.fc2 = nn.Linear(fc1_size, fc2_size)
         self.out = nn.Linear(fc2_size, action_size)
-        
+
         "*** YOUR CODE HERE ***"
 
     def forward(self, state):
@@ -32,12 +32,12 @@ class QNetwork(nn.Module):
         x = F.relu(x)
         action = self.out(x)
         return action
-    
+
 
 class DuelingQNetwork(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_size = 64, fc2_size = 64):
+    def __init__(self, state_size, action_size, seed, fc1_size=64, fc2_size=64):
         """Initialize parameters and build model.
         Params
         ======
@@ -45,7 +45,7 @@ class DuelingQNetwork(nn.Module):
             action_size (int): Dimension of each action
             seed (int): Random seed
         """
-        
+
         super(DuelingQNetwork, self).__init__()
         self.num_actions = action_size
         fc3_1_size = fc3_2_size = 32
@@ -67,7 +67,7 @@ class DuelingQNetwork(nn.Module):
 
         val = F.relu(self.fc3_1(x))
         val = self.fc4_1(val)
-        
+
         adv = F.relu(self.fc3_2(x))
         adv = self.fc4_2(adv)
         # Q(s,a) = V(s) + (A(s,a) - 1/|A| * sum A(s,a'))

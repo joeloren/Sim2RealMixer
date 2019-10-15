@@ -1,12 +1,11 @@
 from collections import deque
-import gym
 
-import torch
+import gym
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 from dqn_agent import Agent
-import noisy_lander
 
 is_ipython = 'inline' in plt.get_backend()
 if is_ipython:
@@ -17,9 +16,9 @@ plt.ion()
 if __name__ == "__main__":
 
     real_env = gym.make('LunarLander-v2')
-    sim_env = gym.make('noisy-lander-v0', max_skew=0.25, seed=None)
-    real_env.seed(0)
-    sim_env.seed(10)
+    sim_env = gym.make('noisy-lander-v0', max_skew=0.25, seed=11)
+    real_env.seed(10)
+    sim_env.seed(111)
     print('State shape: ', real_env.observation_space.shape)
     print('Number of actions: ', sim_env.action_space.n)
 
@@ -57,14 +56,15 @@ if __name__ == "__main__":
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
             if i_episode % 100 == 0:
                 print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
-            if np.mean(scores_window) >= 200.0:
+            if np.mean(scores_window) >= 150.0:
                 print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(i_episode - 100,
                                                                                              np.mean(scores_window)))
                 torch.save(agent.qnetwork_local.state_dict(), 'checkpoint_Dueling_DDQN.pth')
                 break
         return scores
 
-    run_training = False
+
+    run_training = True
     if run_training:
         scores = train(gym_env=sim_env)
         #
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     total_rewards = []
 
     display_games = False
-
+    print("Running agent on REAL")
     for i in range(20):
         state = real_env.reset()
         if display_games:
@@ -105,10 +105,10 @@ if __name__ == "__main__":
         total_rewards.append(tot)
     real_env.close()
     print("total rewards: ", total_rewards)
-    print("Average reward: ", np.mean(total_rewards))
+    print("Average reward and std: ", np.mean(total_rewards), np.std(total_rewards))
 
     # Run the agent in the perturbed environment
-
+    print("Running agent on Sim")
     agent = Agent(state_size=8, action_size=4, seed=0)
     # load the weights from file
     agent.qnetwork_local.load_state_dict(
@@ -117,6 +117,7 @@ if __name__ == "__main__":
 
     for i in range(20):
         state = sim_env.reset()
+
         if display_games:
             img = plt.imshow(sim_env.render(mode='rgb_array'))
         tot = 0
@@ -135,5 +136,4 @@ if __name__ == "__main__":
         total_rewards.append(tot)
     sim_env.close()
     print("total rewards: ", total_rewards)
-    print("Average reward: ", np.mean(total_rewards))
-
+    print("Average reward and std: ", np.mean(total_rewards), np.std(total_rewards))
