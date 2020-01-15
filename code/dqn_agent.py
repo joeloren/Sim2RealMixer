@@ -21,7 +21,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class Agent:
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, seed):
+    def __init__(self, state_size, action_size, seed, sim_sample_frac=0.9):
         """Initialize an Agent object.
         
         Params
@@ -39,14 +39,18 @@ class Agent:
         self.qnetwork_target = DuelingQNetwork(state_size, action_size, seed).to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=LR)
 
-        # Replay memory
-        self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
+        # Replay memory - separate for sim and real environments
+        self.sim_memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
+        self.real_memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
-    def step(self, state, action, reward, next_state, done):
+    def step(self, state, action, reward, next_state, done, is_real):
         # Save experience in replay memory
-        self.memory.add(state, action, reward, next_state, done)
+        if is_real:
+            self.real_memory.add(state, action, reward, next_state, done)
+        else:
+            self.sim_memory.add(state, action, reward, next_state, done)
 
         # Learn every UPDATE_EVERY time steps.
         self.t_step = (self.t_step + 1) % UPDATE_EVERY

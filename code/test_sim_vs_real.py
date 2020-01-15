@@ -6,6 +6,7 @@ import numpy as np
 import torch
 
 from dqn_agent import Agent
+import noisy_lander
 
 is_ipython = 'inline' in plt.get_backend()
 if is_ipython:
@@ -16,7 +17,7 @@ plt.ion()
 if __name__ == "__main__":
 
     real_env = gym.make('LunarLander-v2')
-    sim_env = gym.make('noisy-lander-v0', max_skew=0.25, seed=11)
+    sim_env = gym.make('noisy-lander-v0', max_skew=0.3, seed=11)
     real_env.seed(10)
     sim_env.seed(111)
     print('State shape: ', real_env.observation_space.shape)
@@ -85,7 +86,7 @@ if __name__ == "__main__":
 
     display_games = False
     print("Running agent on REAL")
-    for i in range(20):
+    for i in range(40):
         state = real_env.reset()
         if display_games:
             img = plt.imshow(real_env.render(mode='rgb_array'))
@@ -115,7 +116,7 @@ if __name__ == "__main__":
         torch.load('checkpoint_Dueling_DDQN.pth', map_location=lambda storage, loc: storage))
     total_rewards = []
 
-    for i in range(20):
+    for i in range(40):
         state = sim_env.reset()
 
         if display_games:
